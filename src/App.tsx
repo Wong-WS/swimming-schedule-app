@@ -5,9 +5,11 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ScheduleViewer from './pages/ScheduleViewer';
 import AdminDashboard from './pages/AdminDashboard';
+import ApartmentManager from './pages/ApartmentManager';
 import Header from './components/Header';
 import CompleteProfilePage from './pages/CompleteProfilePage';
 import DebugInfo from './components/DebugInfo';
+import FirestoreSetup from './pages/FirestoreSetup';
 import './App.css';
 
 function App() {
@@ -44,6 +46,9 @@ function App() {
               currentUser ? <Navigate to="/" /> : <SignupPage />
             } />
             
+            {/* Firestore setup page - accessible without login initially */}
+            <Route path="/setup" element={<FirestoreSetup />} />
+            
             {/* Protected routes */}
             <Route path="/" element={
               <PrivateRoute>
@@ -54,6 +59,12 @@ function App() {
             <Route path="/admin" element={
               <PrivateRoute requiredRole="admin">
                 <AdminDashboard />
+              </PrivateRoute>
+            } />
+
+            <Route path="/manage-pools" element={
+              <PrivateRoute requiredRole="admin">
+                <ApartmentManager />
               </PrivateRoute>
             } />
             

@@ -38,6 +38,7 @@ export interface Booking {
   bookedBy: string;  // userId
   createdAt: Date;
   userName?: string;
+  status?: 'booked' | 'unavailable'; // Added status property for booking state
 }
 
 // Time slot related types

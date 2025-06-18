@@ -35,13 +35,21 @@ const Header: React.FC = () => {
               >
                 Schedule
               </Link>
-              {userData?.role === 'admin' && (
-                <Link
-                  to="/admin"
-                  className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                >
-                  Admin Dashboard
-                </Link>
+              {currentUser && userData?.role === 'admin' && (
+                <>
+                  <Link
+                    to="/admin"
+                    className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  >
+                    Admin Dashboard
+                  </Link>
+                  <Link
+                    to="/manage-pools"
+                    className="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  >
+                    Manage Pools
+                  </Link>
+                </>
               )}
             </nav>
           </div>
@@ -111,13 +119,22 @@ const Header: React.FC = () => {
               Schedule
             </Link>
             {userData?.role === 'admin' && (
-              <Link
-                to="/admin"
-                className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Admin Dashboard
-              </Link>
+              <>
+                <Link
+                  to="/admin"
+                  className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Admin Dashboard
+                </Link>
+                <Link
+                  to="/manage-pools"
+                  className="block pl-3 pr-4 py-2 border-l-4 border-transparent text-base font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Manage Pools
+                </Link>
+              </>
             )}
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200">

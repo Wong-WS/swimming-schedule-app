@@ -33,11 +33,20 @@ const AdminDashboard: React.FC = () => {
         
         // Get all apartments
         const apartmentsData = await getApartments();
-        setApartments(apartmentsData);
+        console.log('Admin Dashboard - Fetched apartments:', apartmentsData);
+        setApartments(apartmentsData || []);
+        
+        // If no apartments exist yet, show a more specific message
+        if (!apartmentsData || apartmentsData.length === 0) {
+          setError('No pools/apartments found. Please set up at least one apartment first.');
+          setLoading(false);
+          return;
+        }
         
         // Get bookings for the selected date
         const bookingsData = await getBookingsByDate(formattedDate);
-        setBookings(bookingsData);
+        console.log('Admin Dashboard - Fetched bookings:', bookingsData);
+        setBookings(bookingsData || []);
         
         setLoading(false);
       } catch (error) {
