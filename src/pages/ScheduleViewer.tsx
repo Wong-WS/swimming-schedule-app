@@ -1,29 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import DatePicker from '../components/DatePicker';
-import TimeSlotGrid from '../components/TimeSlotGrid';
+import DirectBookingGrid from '../components/DirectBookingGrid';
 import { getApartments, getBookingsByDate } from '../services/firestoreService';
-import type { TimeSlot, Apartment, Booking } from '../types';
-import { generateTimeSlots, applyTravelTimeRestrictions, groupSlotsByApartment } from '../utils/timeSlotUtils';
+import type { Apartment, Booking } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { FiRefreshCw, FiAlertCircle } from 'react-icons/fi';
-
-// No need for the Button component anymore as we use inline buttons
 
 const ScheduleViewer: React.FC = () => {
   const { userData } = useAuth();
   const userHomeLocation = userData?.homeLocation || '';
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [apartments, setApartments] = useState<Apartment[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [timeSlots, setTimeSlots] = useState<Record<string, TimeSlot[]>>({});
   const [isLoading, setIsLoading] = useState(true);
   // Add a refresh counter state to trigger re-fetching
   const [refreshCounter, setRefreshCounter] = useState(Date.now());
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  // Add booking counts by apartment
-  const [bookingCounts, setBookingCounts] = useState<{[key: string]: number}>({});
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -63,53 +57,22 @@ const ScheduleViewer: React.FC = () => {
         }
         
         console.log(`Fetched ${bookingsData.length} bookings for ${format(selectedDate, 'yyyy-MM-dd')}:`, bookingsData);
+        // Log each booking clearly for debug purposes
+        bookingsData.forEach((booking, i) => {
+          console.log(`Booking ${i+1}:`, 
+            `Apartment: ${booking.apartmentId}`, 
+            `Time: ${booking.startTime}-${booking.endTime}`,
+            `By: ${booking.bookedBy}`
+          );
+        });
+        
         setBookings(bookingsData || []); // Ensure bookings is always an array
         setLastUpdated(new Date());  // Update the timestamp
         
-        // Process data to generate time slots
-        let allSlots: TimeSlot[] = [];
-        
-        // Debug log to track bookings being processed
+        // Simple logging of bookings found
         console.log(`Processing ${bookingsData.length} total bookings for all apartments:`, 
           bookingsData.map(b => `${b.apartmentId}: ${b.startTime}-${b.endTime}`));
         
-        // Generate time slots for each apartment - IMPORTANT: Pass ALL bookings to each apartment
-        apartmentsData.forEach(apartment => {
-          try {
-            if (!apartment.id || !apartment.start || !apartment.end) {
-              console.error('Invalid apartment data:', apartment);
-              return; // Skip this apartment if it has invalid data
-            }
-            
-            // Send ALL bookings to generateTimeSlots - don't filter by apartment
-            // The function itself will match bookings to the correct apartment
-            const apartmentSlots = generateTimeSlots(
-              apartment,
-              format(selectedDate, 'yyyy-MM-dd'),
-              bookingsData || [], // Send ALL bookings, not filtered
-            );
-            allSlots = [...allSlots, ...apartmentSlots];
-          } catch (err) {
-            console.error('Error generating slots for apartment:', apartment.id, err);
-          }
-        });
-        
-        // Apply travel time restrictions if user data is available
-        if (userHomeLocation) {
-          allSlots = applyTravelTimeRestrictions(allSlots, userHomeLocation);
-        }
-        
-        // Group slots by apartment for the TimeSlotGrid
-        const groupedSlots = groupSlotsByApartment(allSlots);
-        
-        // Calculate booking counts by apartment
-        const counts: {[key: string]: number} = {};
-        apartmentsData.forEach(apt => {
-          counts[apt.id] = bookingsData.filter(b => b.apartmentId === apt.id).length;
-        });
-        
-        setBookingCounts(counts);
-        setTimeSlots(groupedSlots);
         setIsLoading(false);
         setIsRefreshing(false);
       } catch (error) {
@@ -130,8 +93,6 @@ const ScheduleViewer: React.FC = () => {
     setIsRefreshing(true);
     // Clear existing data
     setBookings([]);
-    setTimeSlots({});
-    setBookingCounts({});
     // Update refresh counter to trigger a re-fetch with forceRefresh=true
     setRefreshCounter(Date.now());
     // Artificial delay to ensure UI shows refresh state
@@ -196,12 +157,12 @@ const ScheduleViewer: React.FC = () => {
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : (
-        <TimeSlotGrid 
-          timeSlots={timeSlots}
+        <DirectBookingGrid
+          bookings={bookings}
           apartments={apartments}
           userHomeLocation={userHomeLocation}
           date={selectedDate}
-          bookings={bookingCounts}
+          onSlotClick={(apartmentId, startTime, endTime) => console.log('Slot clicked:', apartmentId, startTime, endTime)}
         />
       )}
     </div>
